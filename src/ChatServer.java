@@ -7,7 +7,8 @@ import java.net.Socket;
 
 /**
  * Created by elizabethengelman on 2/26/14.
- * This server, as it is now, is just what Telnet is doing. It takes something from the user, sends it to the Server, and prints out what the server gives it
+ * This server, as it is now, is just what Telnet is doing. It takes something from the user, sends it to the Server,
+ * and prints out what the server gives it
  */
 public class ChatServer {
     public static void main (String[] args) throws Exception {
@@ -21,7 +22,8 @@ public class ChatServer {
         try(
                 ServerSocket serverSocket = new ServerSocket(portNumber);
                 Socket clientSocket = serverSocket.accept();
-                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types of readers/writers?
+                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types
+                // of readers/writers?
                 BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             )
         {
