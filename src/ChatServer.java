@@ -4,6 +4,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by elizabethengelman on 2/26/14.
@@ -11,6 +13,7 @@ import java.net.Socket;
  * and prints out what the server gives it
  */
 public class ChatServer {
+    private static Set<PrintWriter> printWriters = new HashSet<PrintWriter>();
     public static void main (String[] args) throws Exception {
         if (args.length != 1){
             System.err.println("Usage: java ChatServer <port number>");
@@ -46,16 +49,20 @@ public class ChatServer {
         }
 
         public void run(){
-            try(
-                    PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-                    BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                )
+            try
             {
+                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+                printWriters.add(output);
+
                 System.out.println("A new client is connected!");
                 String inputLine;
-                while ((inputLine = input.readLine()) != null){
-                    System.out.println(inputLine);
-                    output.println(inputLine);
+                while (true){
+                        inputLine = input.readLine();
+                        System.out.println("from client: " + inputLine);
+                        for (PrintWriter printWriter : printWriters){
+                        printWriter.println(inputLine);
+                    }
                 }
             }
             catch(IOException ie){
