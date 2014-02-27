@@ -7,10 +7,10 @@ import java.net.UnknownHostException;
  */
 public class ChatClient {
     public static void main (String[] args) throws IOException {
-        if (args.length != 2){
-            System.err.println("Usage: java EchoClient <host name> <port number>");
-            System.exit(1);
-        }
+//        if (args.length != 2){
+//            System.err.println("Usage: java EchoClient <host name> <port number>");
+//            System.exit(1);
+//        }
 
         String hostName = args[0];
         int portNumber = Integer.parseInt(args[1]);
@@ -22,11 +22,11 @@ public class ChatClient {
              BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));//getting input from the user via the keyboard
             )
         {
-
+        System.out.println("Welcome to my awesome chat server!");
         String userInput;
         while ((userInput = stdIn.readLine()) != null){
-            output.println(userInput);//println can only be used with PrintWriter? not OutputStreamWriter?
-            System.out.println("echo: " + input.readLine());
+            output.println("me: " + userInput);//println can only be used with PrintWriter? not OutputStreamWriter?
+            System.out.println("my friend: " + input.readLine());
         }
 
         }

@@ -15,29 +15,32 @@ import java.util.Set;
 public class ChatServer {
     private static Set<PrintWriter> printWriters = new HashSet<PrintWriter>();
     public static void main (String[] args) throws Exception {
-        if (args.length != 1){
-            System.err.println("Usage: java ChatServer <port number>");
-            System.exit(1); //what is exit code 1?
-        }
+//        if (args.length != 1){
+//            System.err.println("Usage: java ChatServer <port number>");
+//            System.exit(1); //what is exit code 1?
+//        }
 
         int portNumber = Integer.parseInt(args[0]);
         System.out.println("Server started");
-        try(
-                ServerSocket serverSocket = new ServerSocket(portNumber);
+        ServerSocket serverSocket = new ServerSocket(portNumber);
+        try
 //                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types
 //                // of readers/writers?
 //                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        ){
+        {
             while(true){
             ChatClientThread thread = new ChatClientThread(serverSocket.accept());
             thread.start();
             }
         }
-
-        catch(IOException ie){
-            System.out.println("Exception caught when trying to listen on port " + portNumber);
-            System.out.println(ie.getMessage());
+        finally{
+            serverSocket.close();
         }
+
+//        catch(IOException ie){
+//            System.out.println("Exception caught when trying to listen on port " + portNumber);
+//            System.out.println(ie.getMessage());
+//        }
     }
 
     public static class ChatClientThread extends Thread{
@@ -56,11 +59,14 @@ public class ChatServer {
                 printWriters.add(output);
 
                 System.out.println("A new client is connected!");
-                String inputLine;
                 while (true){
-                        inputLine = input.readLine();
-                        System.out.println("from client: " + inputLine);
-                        for (PrintWriter printWriter : printWriters){
+                    String inputLine;
+                    inputLine = input.readLine();
+                    System.out.println("from client: " + inputLine);
+                    if (input == null){
+                        return;
+                    }
+                    for (PrintWriter printWriter : printWriters){
                         printWriter.println(inputLine);
                     }
                 }
