@@ -21,24 +21,56 @@ public class ChatServer {
         System.out.println("Server started");
         try(
                 ServerSocket serverSocket = new ServerSocket(portNumber);
-                Socket clientSocket = serverSocket.accept();
-                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types
-                // of readers/writers?
-                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            )
-        {
-            System.out.println("Client connected on port: " + portNumber);
-            System.out.println(input);
-            String inputLine;
-            while ((inputLine = input.readLine()) != null){
-                System.out.println(inputLine);
-                output.println(inputLine);
+//                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types
+//                // of readers/writers?
+//                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        ){
+            while(true){
+            ChatClientThread thread = new ChatClientThread(serverSocket.accept());
+            thread.start();
             }
         }
+
         catch(IOException ie){
             System.out.println("Exception caught when trying to listen on port " + portNumber);
             System.out.println(ie.getMessage());
+        }
+    }
 
+    public static class ChatClientThread extends Thread{
+        private Socket socket;
+
+        //new Thread constructor, which takes in a new socket
+        public ChatClientThread(Socket socket){
+            this.socket = socket;
+        }
+
+        public void run(){
+            try(
+                    PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+                    BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                )
+            {
+                System.out.println("A new client is connected!");
+                String inputLine;
+                while ((inputLine = input.readLine()) != null){
+                    System.out.println(inputLine);
+                    output.println(inputLine);
+                }
+            }
+            catch(IOException ie){
+                System.out.println("Exception caught in the run method");
+                System.out.println(ie.getMessage());
+            }
+            finally {
+                // This client is going down!  Remove its name and its print
+                // writer from the sets, and close its socket.
+                try {
+                    System.out.println("A client is going down, closing its socket!");
+                    socket.close();
+                } catch (IOException e) {
+                }
+            }
         }
     }
 }
