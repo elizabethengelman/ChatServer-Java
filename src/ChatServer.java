@@ -60,15 +60,12 @@ public class ChatServer {
 
                 System.out.println("A new client is connected!");
                 while (true){
-                    String inputLine;
-                    inputLine = input.readLine();
-                    System.out.println("from client: " + inputLine);
-                    if (input == null){
-                        return;
+                    String inputLine = input.readLine();
+                    if (inputLine != null){
+                        System.out.println("from client: " + inputLine);
+                        notifyClient(inputLine);
                     }
-                    for (PrintWriter printWriter : printWriters){
-                        printWriter.println(inputLine);
-                    }
+
                 }
             }
             catch(IOException ie){
@@ -83,6 +80,12 @@ public class ChatServer {
                     socket.close();
                 } catch (IOException e) {
                 }
+            }
+        }
+
+        private void notifyClient(String inputLine) {
+            for (PrintWriter printWriter : printWriters){
+                printWriter.println(inputLine);
             }
         }
     }

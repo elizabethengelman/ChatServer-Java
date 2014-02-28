@@ -23,10 +23,14 @@ public class ChatClient {
             )
         {
         System.out.println("Welcome to my awesome chat server!");
+        ServerPollingThread thread = new ServerPollingThread(input);
+        thread.start();
+
         String userInput;
-        while ((userInput = stdIn.readLine()) != null){
-            output.println("me: " + userInput);//println can only be used with PrintWriter? not OutputStreamWriter?
-            System.out.println("my friend: " + input.readLine());
+        while (true){
+            if ((userInput = stdIn.readLine()) != null) {
+                output.println(userInput);//println can only be used with PrintWriter? not OutputStreamWriter?
+            }
         }
 
         }
@@ -37,6 +41,33 @@ public class ChatClient {
         catch (IOException e){
             System.err.println("Couldn't get I/O for the connection to " + hostName);
             System.exit(1);
+        }
+    }
+
+    public static class ServerPollingThread extends Thread{
+        private BufferedReader serverInput;
+
+        //new Thread constructor, which takes in a new socket
+        public ServerPollingThread(BufferedReader input){
+            this.serverInput = input;
+        }
+
+        public void run(){
+            try
+            {
+                System.out.println("A new client is connected!");
+                while (true){
+                    String inputLine = serverInput.readLine();
+                    if (inputLine != null){
+                        System.out.println(inputLine);
+                    }
+
+                }
+            }
+            catch(IOException ie){
+                System.out.println("Exception caught in the run method");
+                System.out.println(ie.getMessage());
+            }
         }
     }
 }
