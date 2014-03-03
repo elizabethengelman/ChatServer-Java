@@ -7,72 +7,56 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Created by elizabethengelman on 2/26/14.
- * This server, as it is now, is just what Telnet is doing. It takes something from the user, sends it to the Server,
- * and prints out what the server gives it
- */
 public class ChatServer {
     private static Set<PrintWriter> printWriters = new HashSet<PrintWriter>();
-    public static void main (String[] args) throws Exception {
-//        if (args.length != 1){
-//            System.err.println("Usage: java ChatServer <port number>");
-//            System.exit(1); //what is exit code 1?
-//        }
+
+    public static void main(String[] args) throws Exception {
 
         int portNumber = Integer.parseInt(args[0]);
         System.out.println("Server started");
         ServerSocket serverSocket = new ServerSocket(portNumber);
-        try
-//                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types
-//                // of readers/writers?
-//                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        {
-            while(true){
-            ChatClientThread thread = new ChatClientThread(serverSocket.accept());
-            thread.start();
+        try {
+            while (true) {
+                ChatClientThread thread = new ChatClientThread(serverSocket.accept());
+                thread.start();
             }
-        }
-        finally{
+        } finally {
             serverSocket.close();
         }
-
-//        catch(IOException ie){
-//            System.out.println("Exception caught when trying to listen on port " + portNumber);
-//            System.out.println(ie.getMessage());
-//        }
     }
 
-    public static class ChatClientThread extends Thread{
+    public static class ChatClientThread extends Thread {
         private Socket socket;
 
-        //new Thread constructor, which takes in a new socket
-        public ChatClientThread(Socket socket){
+        public ChatClientThread(Socket socket) {
             this.socket = socket;
         }
 
-        public void run(){
-            try
-            {
+        public void run() {
+            try {
                 BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                 printWriters.add(output);
 
                 System.out.println("A new client is connected!");
-                while (true){
+                String userName = "";
+                while (userName.length() < 1) {
+                    output.println("Please enter your preferred user name. It must be at least 1 character.");
+                    userName = input.readLine();
+                }
+                output.println("Your name has been accepted, it is: " + userName);
+                while (true) {
                     String inputLine = input.readLine();
-                    if (inputLine != null){
+                    if (inputLine != null) {
                         System.out.println("from client: " + inputLine);
-                        notifyClient(inputLine);
+                        notifyClient(userName + ": " + inputLine);
                     }
 
                 }
-            }
-            catch(IOException ie){
+            } catch (IOException ie) {
                 System.out.println("Exception caught in the run method");
                 System.out.println(ie.getMessage());
-            }
-            finally {
+            } finally {
                 // This client is going down!  Remove its name and its print
                 // writer from the sets, and close its socket.
                 try {
@@ -84,7 +68,7 @@ public class ChatServer {
         }
 
         private void notifyClient(String inputLine) {
-            for (PrintWriter printWriter : printWriters){
+            for (PrintWriter printWriter : printWriters) {
                 printWriter.println(inputLine);
             }
         }
