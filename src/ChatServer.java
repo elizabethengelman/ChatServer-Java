@@ -4,39 +4,73 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Created by elizabethengelman on 2/26/14.
- * This server, as it is now, is just what Telnet is doing. It takes something from the user, sends it to the Server, and prints out what the server gives it
- */
 public class ChatServer {
-    public static void main (String[] args) throws Exception {
-        if (args.length != 1){
-            System.err.println("Usage: java ChatServer <port number>");
-            System.exit(1); //what is exit code 1?
-        }
+    private static Set<PrintWriter> printWriters = new HashSet<PrintWriter>();
+
+    public static void main(String[] args) throws Exception {
 
         int portNumber = Integer.parseInt(args[0]);
         System.out.println("Server started");
-        try(
-                ServerSocket serverSocket = new ServerSocket(portNumber);
-                Socket clientSocket = serverSocket.accept();
-                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true);//when to use different types of readers/writers?
-                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            )
-        {
-            System.out.println("Client connected on port: " + portNumber);
-            System.out.println(input);
-            String inputLine;
-            while ((inputLine = input.readLine()) != null){
-                System.out.println(inputLine);
-                output.println(inputLine);
+        ServerSocket serverSocket = new ServerSocket(portNumber);
+        try {
+            while (true) {
+                ChatClientThread thread = new ChatClientThread(serverSocket.accept());
+                thread.start();
+            }
+        } finally {
+            serverSocket.close();
+        }
+    }
+
+    public static class ChatClientThread extends Thread {
+        private Socket socket;
+
+        public ChatClientThread(Socket socket) {
+            this.socket = socket;
+        }
+
+        public void run() {
+            try {
+                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+                printWriters.add(output);
+
+                System.out.println("A new client is connected!");
+                String userName = "";
+                while (userName.length() < 1) {
+                    output.println("Please enter your preferred user name. It must be at least 1 character.");
+                    userName = input.readLine();
+                }
+                output.println("Your name has been accepted, it is: " + userName);
+                while (true) {
+                    String inputLine = input.readLine();
+                    if (inputLine != null) {
+                        System.out.println("from client: " + inputLine);
+                        notifyClient(userName + ": " + inputLine);
+                    }
+
+                }
+            } catch (IOException ie) {
+                System.out.println("Exception caught in the run method");
+                System.out.println(ie.getMessage());
+            } finally {
+                // This client is going down!  Remove its name and its print
+                // writer from the sets, and close its socket.
+                try {
+                    System.out.println("A client is going down, closing its socket!");
+                    socket.close();
+                } catch (IOException e) {
+                }
             }
         }
-        catch(IOException ie){
-            System.out.println("Exception caught when trying to listen on port " + portNumber);
-            System.out.println(ie.getMessage());
 
+        private void notifyClient(String inputLine) {
+            for (PrintWriter printWriter : printWriters) {
+                printWriter.println(inputLine);
+            }
         }
     }
 }
