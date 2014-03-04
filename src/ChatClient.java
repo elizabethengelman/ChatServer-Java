@@ -47,7 +47,6 @@ public class ChatClient {
                     if (inputLine != null) {
                         System.out.println(inputLine);
                     }
-
                 }
             } catch (IOException ie) {
                 System.out.println("Exception caught in the run method");
