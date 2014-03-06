@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class ChatServer {
     private static Set<PrintWriter> printWriters = new HashSet<PrintWriter>();
-
+    private static Set<String> names = new HashSet<String>();
     public static void main(String[] args) throws Exception {
 
         int portNumber = Integer.parseInt(args[0]);
@@ -40,10 +40,15 @@ public class ChatServer {
 
                 System.out.println("A new client is connected!");
                 String userName = "";
-                while (userName.length() < 1) {
+                while ((userName.length() < 1)){
                     output.println("Please enter your preferred user name. It must be at least 1 character.");
                     userName = input.readLine();
+                    if (names.contains(userName)){
+                        output.print("That user name is already taken. ");
+                        userName = "";
+                    }
                 }
+                names.add(userName);
                 output.println("Your name has been accepted, it is: " + userName);
                 while (true) {
                     String inputLine = input.readLine();
